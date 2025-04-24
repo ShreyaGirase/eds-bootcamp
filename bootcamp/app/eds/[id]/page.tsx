@@ -39,3 +39,12 @@ export default async function Page({
     </main>
   )
 }
+
+/*
+Title Description
+Motive behind the project
+Features and Working
+Technologies
+Domain
+Setup 
+*/
