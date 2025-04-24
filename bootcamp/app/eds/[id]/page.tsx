@@ -1,46 +1,41 @@
-"use client";
-
-import { useState } from "react";
-
-export default function Counter() {
-  const [count, setCount] = useState(0);
-
-  const increment = () => setCount(count + 1);
-  const decrement = () => setCount(count - 1);
-  const reset = () => setCount(0);
-
+interface Post {
+  id: string
+  title: string
+  content: string
+}
+ 
+// Next.js will invalidate the cache when a
+// request comes in, at most once every 60 seconds.
+export const revalidate = 60
+ 
+// We'll prerender only the params from `generateStaticParams` at build time.
+// If a request comes in for a path that hasn't been generated,
+// Next.js will server-render the page on-demand.
+export const dynamicParams = true // or false, to 404 on unknown paths
+ 
+export async function generateStaticParams() {
+  const posts: Post[] = await fetch('https://api.vercel.app/blog').then((res) =>
+    res.json()
+  )
+  return posts.map((post) => ({
+    id: String(post.id),
+  }))
+}
+ 
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = await params
+  const post: Post = await fetch(`https://api.vercel.app/blog/${id}`).then(
+    (res) => res.json()
+  )
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-white">
-      <div className="p-8 rounded-lg">
-        <h1 className="text-3xl font-bold text-center mb-6">Counter App</h1>
-        
-        <div className="flex justify-center items-center mb-8">
-          <div className="text-6xl font-bold">{count}</div>
-        </div>
-        
-        <div className="flex gap-4">
-          <button
-            onClick={decrement}
-            className="px-6 py-2 bg-red-500 text-white font-medium rounded-md hover:bg-red-600 transition-colors"
-          >
-            Decrement
-          </button>
-          
-          <button
-            onClick={reset}
-            className="px-6 py-2 bg-gray-500 text-white font-medium rounded-md hover:bg-gray-600 transition-colors"
-          >
-            Reset
-          </button>
-          
-          <button
-            onClick={increment}
-            className="px-6 py-2 bg-green-500 text-white font-medium rounded-md hover:bg-green-600 transition-colors"
-          >
-            Increment
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+    <main>
+      <h1>{post.id}</h1>
+      <h1>{post.title}</h1>
+      <p>{post.content}</p>
+    </main>
+  )
 }
